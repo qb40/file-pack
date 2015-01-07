@@ -4,6 +4,7 @@ DECLARE SUB nibbleProb (file%, prob() AS SINGLE)
 DECLARE SUB selectSort (value() AS SINGLE, map() AS STRING, ibegin%, iend%)
 DECLARE SUB insertSort (value() AS SINGLE, map() AS STRING, ibegin%, iend%)
 DECLARE SUB huffmanCode (prob() AS SINGLE, bits() AS STRING)
+DECLARE FUNCTION avgBitLength! (prob() AS SINGLE, bits() AS STRING)
 
 
 'init
@@ -33,6 +34,9 @@ NEXT
 PRINT
 k$ = INPUT$(1)
 
+PRINT "Avg Bit Length = "; avgBitLength!(prob(), bits())
+k$ = INPUT$(1)
+
 SUB addBit (bits() AS STRING, map$, bit$)
 
 FOR i% = 1 TO LEN(map$)
@@ -41,6 +45,16 @@ bits(imap%) = bits(imap%) + bit$
 NEXT
 
 END SUB
+
+FUNCTION avgBitLength! (prob() AS SINGLE, bits() AS STRING)
+
+avg! = 0
+FOR i% = 0 TO 15
+avg! = avg! + (prob(i%) * LEN(bits(i%)))
+NEXT
+
+avgBitLength! = avg!
+END FUNCTION
 
 SUB huffmanCode (prob() AS SINGLE, bits() AS STRING)
 
@@ -106,7 +120,7 @@ NEXT
 WEND
 
 FOR i% = 0 TO 15
-prob(i%) = prob(i%) / length&
+prob(i%) = prob(i%) / (length& * 2)
 NEXT
 
 END SUB
