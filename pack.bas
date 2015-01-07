@@ -1,14 +1,14 @@
 'function declarations
+DECLARE SUB addBit (bits() AS STRING, map$, bit$)
 DECLARE SUB nibbleProb (file%, prob() AS SINGLE)
-DECLARE SUB nibbleSort (prob() AS SINGLE, map() AS INTEGER)
-DECLARE SUB probBits (prob() AS SINGLE, bits() AS STRING, ibegin%, iend%)
-DECLARE SUB nibbleBits (map() AS INTEGER, bits() AS STRING)
+DECLARE SUB selectSort (value() AS SINGLE, map() AS STRING, ibegin%, iend%)
+DECLARE SUB insertSort (value() AS SINGLE, map() AS STRING, ibegin%, iend%)
+DECLARE SUB huffmanCode (prob() AS SINGLE, bits() AS STRING)
 
 
 'init
 OPTION BASE 0
 DIM prob(16) AS SINGLE
-DIM map(16) AS INTEGER
 DIM bits(16) AS STRING
 CLS
 
@@ -25,48 +25,60 @@ NEXT
 PRINT
 k$ = INPUT$(1)
 
-PRINT "nibbleSort"
-nibbleSort prob(), map()
+PRINT "huffmanCode"
+huffmanCode prob(), bits()
 FOR i% = 0 TO 15
-PRINT map(i%); " = "; prob(i%)
+PRINT i%; " = "; prob(i%); " : "; bits(i%)
 NEXT
 PRINT
 k$ = INPUT$(1)
 
-PRINT "probBits"
-probBits prob(), bits(), 0, 16
-k$ = INPUT$(1)
-FOR i% = 0 TO 15
-PRINT map(i%); " = "; prob(i%); " : "; bits(i%)
+SUB addBit (bits() AS STRING, map$, bit$)
+
+FOR i% = 1 TO LEN(map$)
+imap% = ASC(MID$(map$, i%, 1))
+bits(imap%) = bits(imap%) + bit$
 NEXT
-PRINT
-k$ = INPUT$(1)
 
-PRINT "nibbleBits"
-nibbleBits map(), bits()
+END SUB
+
+SUB huffmanCode (prob() AS SINGLE, bits() AS STRING)
+
+DIM map(16) AS STRING
+DIM pr(16) AS SINGLE
+
+'create default map
+'copy probability
 FOR i% = 0 TO 15
-PRINT map(i%); " : "; bits(i%)
+map(i%) = CHR$(i%)
+pr(i%) = prob(i%)
 NEXT
-PRINT
-k$ = INPUT$(1)
 
+'sort probability
+selectSort pr(), map(), 0, 16
 
-SUB nibbleBits (map() AS INTEGER, bits() AS STRING)
+FOR i% = 0 TO 14
+addBit bits(), map(i%), "0"
+addBit bits(), map(i% + 1), "1"
+pr(i% + 1) = pr(i% + 1) + pr(i%)
+map(i% + 1) = map(i% + 1) + map(i%)
+insertSort pr(), map(), i% + 1, 16
+NEXT
 
-'map bits to nibble
-i% = 0
-WHILE i% <= 15
-nibble% = map(i%)
-IF nibble% <> map(i%) THEN
-tbits$ = bits(nibble%)
-bits(nibble%) = bits(i%)
-bits(i%) = tbits$
-map(nibble%) = nibble%
-map(i%) = map(nibble%)
-ELSE
-i% = i% + 1
-END IF
-WEND
+END SUB
+
+SUB insertSort (value() AS SINGLE, map() AS STRING, ibegin%, iend%)
+
+'ascending order, 1st elem insert
+ival! = value(ibegin%)
+imap$ = map(ibegin%)
+FOR i% = ibegin% + 1 TO iend% - 1
+IF value(i%) >= ival! THEN EXIT FOR
+value(i% - 1) = value(i%)
+map(i% - 1) = map(i%)
+NEXT
+value(i% - 1) = ival!
+map(i% - 1) = imap$
 
 END SUB
 
@@ -99,62 +111,25 @@ NEXT
 
 END SUB
 
-SUB nibbleSort (prob() AS SINGLE, map() AS INTEGER)
+SUB selectSort (value() AS SINGLE, map() AS STRING, ibegin%, iend%)
 
-'prepare for sort
-FOR i% = 0 TO 15
-map(i%) = i%
-NEXT
-
-'descending sort
-FOR i% = 0 TO 15
-max! = prob(i%)
-maxi% = i%
-FOR j% = i% + 1 TO 15
-IF prob(j%) > max! THEN
-max! = prob(j%)
-maxi% = j%
+'ascending sort
+FOR i% = ibegin% TO iend% - 2
+min! = value(i%)
+mini% = i%
+FOR j% = i% + 1 TO iend% - 1
+IF value(j%) < min! THEN
+min! = value(j%)
+mini% = j%
 END IF
 NEXT
-tprob! = prob(i%)
-tmap% = map(i%)
-prob(i%) = max!
-map(i%) = map(maxi%)
-prob(maxi%) = tprob!
-map(maxi%) = tmap%
+tval! = value(i%)
+tmap$ = map(i%)
+value(i%) = min!
+map(i%) = map(mini%)
+value(mini%) = tval!
+map(mini%) = tmap$
 NEXT
-
-END SUB
-
-SUB probBits (prob() AS SINGLE, bits() AS STRING, ibegin%, iend%)
-
-'exit if too small
-IF (iend% - ibegin% < 2) THEN EXIT SUB
-
-'find total probability
-total! = 0
-FOR i% = ibegin% TO iend% - 1
-total! = total! + prob(i%)
-NEXT
-
-'find half probability point
-sum! = 0
-half! = total! / 2
-halfi% = ibegin%
-FOR i% = ibegin% TO iend% - 1
-sum! = sum! + prob(i%)
-IF sum! <= half! THEN
-bits(i%) = bits(i%) + "0"
-halfi% = i%
-ELSE
-bits(i%) = bits(i%) + "1"
-END IF
-NEXT
-halfi% = halfi% + 1
-
-'do that same for each half part
-probBits prob(), bits(), ibegin%, halfi%
-probBits prob(), bits(), halfi%, iend%
 
 END SUB
 
