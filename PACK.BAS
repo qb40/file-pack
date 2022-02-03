@@ -52,6 +52,7 @@ fdst$ = addFileExt$(fdst$, ".pk")
 PRINT
 COLOR 11
 
+PRINT fdst$
 'open both files
 OPEN "B", #1, fsrc$
 OPEN "B", #2, fdst$
@@ -150,8 +151,8 @@ END SUB
 
 FUNCTION addFileExt$ (file$, ext$)
 
-fext$ = RIGHT$(file$, LEN(ext$))
-IF fext$ = ext$ THEN fdst$ = file$ ELSE fdst$ = file$ + "." + ext$
+i% = INSTR(file$, ".")
+IF i% > 0 THEN fdst$ = file$ ELSE fdst$ = file$ + "." + ext$
 
 addFileExt$ = fdst$
 END FUNCTION
